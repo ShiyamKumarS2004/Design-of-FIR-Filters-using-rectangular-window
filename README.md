@@ -15,55 +15,54 @@ clc;
 clear;
 close;
 
-// FIR Low Pass Filter Design using Fourier Series Method
-// with Rectangular Window
+// Filter specifications
+N = 25;                // Filter length
+wc = 0.4 * %pi;        // Cutoff frequency (in radians)
 
-// Step 1: Input specifications
-M = input("Enter the Odd Filter Length = ");      // e.g., 21
-Wc = input("Enter the Digital Cutoff Frequency (in radians) = "); // e.g., 0.4*%pi
+// Initialize impulse response
+h = zeros(1, N);
+alpha = (N - 1) / 2;   // Midpoint
 
-alpha = (M - 1) / 2;     // Center index
-
-// Step 2: Compute ideal impulse response (sinc function)
-for n = 1:M
-    if (n == alpha + 1) then
-        hd(n) = Wc / %pi;   // At center, sinc(0) = 1
+// Compute impulse response (ideal low-pass filter)
+for n = 0:N-1
+    if n == alpha then
+        h(n+1) = wc / %pi;    // Handle division by zero at center
     else
-        hd(n) = sin(Wc * ((n - 1) - alpha)) / (((n - 1) - alpha) * %pi);
+        h(n+1) = sin(wc * (n - alpha)) / (%pi * (n - alpha));
     end
 end
 
-// Step 3: Define window coefficients (Rectangular window)
-for n = 1:M
-    W(n) = 1;    // Rectangular window → all ones
-end
+// Rectangular window → multiply by 1 (no change)
+w = ones(1, N);
+h = h .* w;
 
-// Step 4: Apply window to impulse response
-h = hd .* W;
-disp(h, "Filter Coefficients are:");
+// Display impulse response
+disp("Impulse Response h(n):");
+disp(h);
 
-// Step 5: Compute Frequency Response
-[hzm, fr] = frmag(h, 256);  // 256-point frequency response
-
-// Step 6: Plot magnitude and magnitude (dB)
+// Plot impulse response
 subplot(2,1,1);
-plot(2*fr, hzm);
-xlabel("Normalized Digital Frequency (×π rad/sample)");
-ylabel("Magnitude");
-title("Frequency Response of FIR LPF using Rectangular Window");
+plot(h);
+title('Impulse Response h(n) using Rectangular Window');
+xlabel('n');
+ylabel('Amplitude');
 
+// Frequency response
+[H, w_freq] = freq(h, 512);
+
+// Plot magnitude response
 subplot(2,1,2);
-hzm_dB = 20 * log10(hzm);
-plot(2*fr, hzm_dB);
-xlabel("Normalized Digital Frequency (×π rad/sample)");
-ylabel("Magnitude (dB)");
-title("Frequency Response of FIR LPF using Rectangular Window (in dB)");
+plot(w_freq, abs(H));
+title('Magnitude Response |H(ω)|');
+xlabel('Frequency (rad/sample)');
+ylabel('|H(ω)|');
+
 ```
 
 
 # OUTPUT
 
-<img width="1192" height="651" alt="lp" src="https://github.com/user-attachments/assets/6ac96168-8f9c-412d-8e22-f0a72fb372f2" />
+<img width="1919" height="867" alt="image" src="https://github.com/user-attachments/assets/32a2c77f-9046-42e5-9d4f-6b1824a09793" />
 
 
 # RESULT
